@@ -1,66 +1,49 @@
 import streamlit as st
 import os
 from agents import diretor_coordenacao
-from knowledge import knowledge_base
+from knowledge import knowledge_base, inicializar_base
 from utils import extrair_texto_pdf
 
-# Configuração de limite de upload e layout
-st.set_page_config(
-    page_title="AprovAnalyzer ESAN", 
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Estilo CSS para garantir que o upload não falhe por timeout visual
-st.markdown("""
-    <style>
-    .stDeployButton {display:none;}
-    </style>
-    """, unsafe_allow_html=True)
+st.set_page_config(page_title="AprovAnalyzer ESAN", layout="wide")
 
 st.title("🏛️ Sistema de Aproveitamento de Estudos - ESAN")
 st.markdown("---")
 
-# Sidebar para administração da base
+# Sidebar
 with st.sidebar:
-    st.header("Painel Administrativo")
-    st.write("Use este botão apenas quando adicionar novos ementários na pasta do GitHub.")
-    if st.button("🔄 Atualizar Base de Ementas"):
-        with st.spinner("Indexando PDFs no LanceDB..."):
-            try:
-                knowledge_base.load(recreate=True)
-                st.success("Base atualizada com sucesso!")
-            except Exception as e:
-                st.error(f"Erro ao atualizar base: {e}")
+    st.header("⚙️ Configuração")
+    st.warning("⚠️ Na primeira vez que usar após o deploy, clique no botão abaixo.")
+    if st.button("🔄 Indexar Ementas da ESAN"):
+        with st.spinner("Lendo arquivos da universidade..."):
+            sucesso = inicializar_base()
+            if sucesso:
+                st.success("Base de dados pronta para uso!")
+            else:
+                st.error("Falha ao carregar ementários. Verifique a pasta no GitHub.")
 
-# Área principal de upload do estudante
-st.info("Suba aqui o ementário enviado pelo estudante (IES Externa) para análise.")
+# Interface Principal
+st.subheader("Análise de Estudante")
+uploaded_file = st.file_uploader("Suba o PDF do estudante aqui", type="pdf")
 
-# Definindo um limite claro de 20MB para evitar erro 400 no Render
-uploaded_file = st.file_uploader("Escolher arquivo PDF", type="pdf", help="Limite de 20MB por arquivo")
-
-if uploaded_file is not None:
-    # Mostra progresso de leitura
-    st.success(f"Arquivo '{uploaded_file.name}' carregado com sucesso!")
-    
-    if st.button("🚀 Iniciar Análise Multiagente"):
-        with st.spinner("Os agentes estão analisando os documentos e comparando com a base da ESAN..."):
-            try:
-                # Extração do texto do PDF enviado usando a função utilitária
-                texto_estudante = extrair_texto_pdf(uploaded_file)
-                
-                if not texto_estudante or len(texto_estudante.strip()) < 50:
-                    st.warning("O PDF parece estar vazio ou é uma imagem (necessário OCR).")
-                else:
-                    # Execução da equipe de agentes
-                    prompt = f"Analise este pedido de aproveitamento vindo de outra instituição: {texto_estudante}"
+if uploaded_file:
+    if st.button("🔍 Iniciar Comparação Acadêmica"):
+        # Verificação se o banco existe (evita erro 502 por busca em vazio)
+        if not os.path.exists(os.path.join(os.path.dirname(__file__), "data/lancedb")):
+            st.error("O banco de dados está vazio. Clique em 'Indexar Ementas' na lateral primeiro!")
+        else:
+            with st.spinner("Os agentes estão comparando as ementas... Isso pode levar até 1 minuto."):
+                try:
+                    texto_estudante = extrair_texto_pdf(uploaded_file)
+                    
+                    # Chamada dos agentes
+                    prompt = f"Realize a análise de aproveitamento para este conteúdo: {texto_estudante}"
                     response = diretor_coordenacao.run(prompt)
                     
-                    st.markdown("### 📋 Parecer Final da Coordenação")
+                    st.markdown("### 📋 Resultado da Análise Multiagente")
                     st.markdown(response.content)
-            except Exception as e:
-                st.error(f"Ocorreu um erro durante a análise: {e}")
+                except Exception as e:
+                    st.error(f"Erro no processamento: {e}")
+                    st.info("Dica: Tente indexar a base novamente na barra lateral.")
 
 st.markdown("---")
-st.caption("Desenvolvido para automação de processos acadêmicos - Unidade ESAN.")
-
+st.caption("AprovAnalyzer v1.0 - ESAN/UFMS")
