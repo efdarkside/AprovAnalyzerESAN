@@ -1,5 +1,6 @@
 import os
-from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
+from agno.knowledge.pdf_knowledge import PDFKnowledgeBase
+from agno.knowledge.pdf_reader import PDFReader
 from agno.vectordb.lancedb import LanceDb, SearchType
 
 knowledge_base = PDFKnowledgeBase(
