@@ -2,13 +2,12 @@ import os
 from phi.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from phi.vectordb.lancedb import LanceDb, SearchType
 
-# Configuração de caminhos absolutos para o ambiente Render
+# Configuração de caminhos absolutos
 base_path = os.path.dirname(os.path.abspath(__file__))
 ementarios_path = os.path.join(base_path, "ementarios_universidade")
-# Armazenamos na pasta 'data' que o Render pode acessar
 db_uri = os.path.join(base_path, "data/lancedb")
 
-# Garante que a pasta de dados exista antes de iniciar o banco
+# Cria a pasta data se não existir para evitar erros de permissão
 os.makedirs(os.path.join(base_path, "data"), exist_ok=True)
 
 # Inicialização da Base de Conhecimento
@@ -24,19 +23,18 @@ knowledge_base = PDFKnowledgeBase(
 
 def inicializar_base():
     """
-    Função para carregar os PDFs no banco vetorial.
+    Lê os PDFs da pasta e popula o LanceDB.
     """
-    if not os.path.exists(ementarios_path):
-        print(f"Erro: A pasta {ementarios_path} não foi encontrada.")
-        return False
-    
     try:
-        print(f"🚀 Iniciando indexação de: {ementarios_path}")
+        if not os.path.exists(ementarios_path):
+            print(f"Erro: Pasta {ementarios_path} não encontrada.")
+            return False
+            
+        print(f"🚀 Indexando documentos em {db_uri}...")
         knowledge_base.load(recreate=True)
-        print("✅ LanceDB populado com sucesso!")
         return True
     except Exception as e:
-        print(f"Erro ao carregar base: {e}")
+        print(f"Falha na indexação: {e}")
         return False
 
 if __name__ == "__main__":
