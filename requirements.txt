@@ -3,3 +3,5 @@ streamlit
 pypdf
 python-dotenv
 openai
+lancedb
+tantivy
