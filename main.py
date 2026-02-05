@@ -1,7 +1,14 @@
 import streamlit as st
+from knowledge import knowledge_base
 from agents import diretor_coordenacao
 from utils import extrair_texto_pdf
 import os
+
+st.sidebar.title("Configurações do Sistema")
+if st.sidebar.button("Atualizar Base de Ementas (Admin)"):
+    with st.spinner("Lendo PDFs e indexando no LanceDB..."):
+        knowledge_base.load(recreate=True)
+        st.sidebar.success("Base de dados atualizada!")
 
 st.set_page_config(page_title="Automação de Aproveitamento de Estudos ESAN", layout="wide")
 
@@ -37,4 +44,5 @@ if st.button("Iniciar Análise Multiagente"):
             response = diretor_coordenacao.run(prompt)
             st.markdown(response.content)
     else:
+
         st.error("Por favor, faça o upload de ambos os arquivos.")
