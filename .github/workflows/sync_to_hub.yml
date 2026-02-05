@@ -19,4 +19,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         # Substitua 'efdarkside' pelo seu usuário HF e 'AprovAnalyzerESAN' pelo nome do Space
-        run: git push https://efdarkside:$HF_TOKEN@huggingface.co/spaces/efdarkside/AprovAnalyzerESAN main
+        run: git push --force https://efdarkside:$HF_TOKEN@huggingface.co/spaces/efdarkside/AprovAnalyzerESAN main
