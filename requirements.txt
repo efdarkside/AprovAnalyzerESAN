@@ -1,8 +1,7 @@
-agno>=1.0.0
+phidata
 streamlit
 pypdf
 python-dotenv
 openai
 lancedb
 tantivy
-setuptools
