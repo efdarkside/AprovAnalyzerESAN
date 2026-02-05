@@ -1,0 +1,5 @@
+agno
+streamlit
+pypdf
+python-dotenv
+openai
