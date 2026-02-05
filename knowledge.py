@@ -2,12 +2,16 @@ import os
 from phi.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from phi.vectordb.lancedb import LanceDb, SearchType
 
-# Configuração de caminhos para o Render
+# Configuração de caminhos absolutos para o ambiente Render
 base_path = os.path.dirname(os.path.abspath(__file__))
 ementarios_path = os.path.join(base_path, "ementarios_universidade")
+# Armazenamos na pasta 'data' que o Render pode acessar
 db_uri = os.path.join(base_path, "data/lancedb")
 
-# Inicialização da Base de Conhecimento usando Phidata
+# Garante que a pasta de dados exista antes de iniciar o banco
+os.makedirs(os.path.join(base_path, "data"), exist_ok=True)
+
+# Inicialização da Base de Conhecimento
 knowledge_base = PDFKnowledgeBase(
     path=ementarios_path,
     vector_db=LanceDb(
@@ -24,12 +28,16 @@ def inicializar_base():
     """
     if not os.path.exists(ementarios_path):
         print(f"Erro: A pasta {ementarios_path} não foi encontrada.")
-        return
+        return False
     
-    print(f"🚀 Carregando ementários de: {ementarios_path}")
-    # O Phidata criará a pasta 'data' automaticamente se não existir
-    knowledge_base.load(recreate=True)
-    print("✅ Base de dados LanceDB atualizada com sucesso!")
+    try:
+        print(f"🚀 Iniciando indexação de: {ementarios_path}")
+        knowledge_base.load(recreate=True)
+        print("✅ LanceDB populado com sucesso!")
+        return True
+    except Exception as e:
+        print(f"Erro ao carregar base: {e}")
+        return False
 
 if __name__ == "__main__":
     inicializar_base()
