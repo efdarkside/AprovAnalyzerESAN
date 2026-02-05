@@ -3,14 +3,21 @@ from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from agno.vectordb.lancedb import LanceDb, SearchType
 
 knowledge_base = PDFKnowledgeBase(
-    path="ementarios_universidade/", # Pasta onde você colocará os PDFs dos 6 cursos
+    path="ementarios_universidade/",
     vector_db=LanceDb(
         table_name="ementas_federais",
         uri=db_uri,
         search_type=SearchType.vector,
     ),
-    reader=PDFReader(chunk=True), # Divide o PDF em pedaços para melhor busca
+    reader=PDFReader(chunk=True),
 )
 
-# Comando para carregar os dados (você executará isso uma vez ou via interface)
-# knowledge_base.load(recreate=True)
+def inicializar_base():
+    if not os.path.exists(db_uri):
+        print("🚀 Primeira execução detectada. Criando base de dados...")
+        knowledge_base.load(recreate=True)
+    else:
+        print("✅ Base de dados já existente.")
+
+if __name__ == "__main__":
+    inicializar_base()
