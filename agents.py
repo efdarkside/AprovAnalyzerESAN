@@ -1,5 +1,6 @@
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
+from knowledge import knowledge_base
 from utils import extrair_texto_pdf, anonimizar_texto
 
 # 1. Agente de Leitura (Ementário da Casa)
@@ -26,12 +27,19 @@ agente_lgpd = Agent(
     instructions=["Você é um Oficial de Proteção de Dados (DPO). Sua missão é agir antes que os dados cheguem à análise de similaridade. Identifique e remova: Nomes de alunos, números de matrícula, CPFs, e-mails, endereços e assinaturas. Substitua-os por '[DADO ANONIMIZADO]'. Mantenha a integridade total do conteúdo das disciplinas."],
 )
 
-# 4. Agente de Similaridade
+# 4. Analista RAG
 analista_similaridade = Agent(
-    name="Analista de Equivalência",
-    role="Especialista em Matrizes Curriculares",
-    model=OpenAIChat(id="gpt-5-nano"),
-    instructions=["Você é um Especialista em Matrizes Curriculares. Compare a disciplina externa com a interna. Critérios: 1. A carga horária externa deve ser igual ou superior a 75% da interna. 2. O conteúdo programático deve ter similaridade de temas e profundidade de pelo menos 75%. Forneça uma tabela comparativa de tópicos equivalentes e a porcentagem final de compatibilidade."],
+    name="Analista_Academico_RAG",
+    role="Especialista em Equivalência de Disciplinas",
+    knowledge=knowledge_base,
+    search_knowledge=True,
+    instructions=[
+        "Ao receber uma ementa de um aluno, busque no banco de dados a disciplina correspondente.",
+        "Compare a carga horária e o conteúdo programático.",
+        "Se não encontrar uma disciplina com mais de 75% de similaridade, informe que não há equivalente.",
+        "Sempre cite o nome da disciplina interna encontrada para comparação.",
+        "Fazer um ranking de top 5 disciplinas mais similares."
+    ],
 )
 
 # 5. Agente Diretor
@@ -43,4 +51,5 @@ diretor_coordenacao = Agent(
     instructions=["Você é o Coordenador de Curso. Você recebe os relatórios dos agentes de leitura, privacidade e similaridade. Sua função é dar a palavra final. Se o match for > 75% e a carga horária for compatível, declare 'DEFERIDO'. Caso contrário, 'INDEFERIDO'. Sempre apresente uma justificativa técnica curta e clara para o aluno. Faça também um Top 5 das disciplinas mais semelhantes."],
     show_tool_calls=True,
     markdown=True
+
 )
