@@ -5,7 +5,7 @@ from phi.vectordb.lancedb import LanceDb, SearchType
 # Configuração de caminhos absolutos
 base_path = os.path.dirname(os.path.abspath(__file__))
 ementarios_path = os.path.join(base_path, "ementarios_universidade")
-db_uri = os.path.join(base_path, "data/lancedb")
+db_uri = os.path.join(base_path, "data/lancedb") # HF permite escrita temporária aqui
 
 # Cria a pasta data se não existir para evitar erros de permissão
 os.makedirs(os.path.join(base_path, "data"), exist_ok=True)
