@@ -2,21 +2,34 @@ name: Sync to Hugging Face Hub
 on:
   push:
     branches: [main]
-
-  # Permite rodar manualmente na aba Actions se precisar
   workflow_dispatch:
 
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
         with:
-          fetch-depth: 0
-          lfs: true
-      
-      - name: Push to hub
+          python-version: '3.10'
+
+      - name: Instalar Ferramentas Hugging Face
+        run: pip install huggingface_hub
+
+      - name: Upload para o Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        # Substitua 'efdarkside' pelo seu usuário HF e 'AprovAnalyzerESAN' pelo nome do Space
-        run: git push --force https://efdarkside:$HF_TOKEN@huggingface.co/spaces/efdarkside/AprovAnalyzerESAN main
+        # Substitua 'efdarkside' e 'AprovAnalyzerESAN' se necessário
+        run: |
+          python -c "from huggingface_hub import HfApi; \
+          api = HfApi(); \
+          api.upload_folder( \
+              folder_path='.', \
+              repo_id='efdarkside/AprovAnalyzerESAN', \
+              repo_type='space', \
+              token='${{ secrets.HF_TOKEN }}', \
+              ignore_patterns=['.git', '.github', '.gitignore'] \
+          )"
